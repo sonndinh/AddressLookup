@@ -59,6 +59,7 @@ jobs:
         cd OpenDDS
         . setenv.sh
         cd ../ACE_TAO/ACE
+        ls
         make -j4
     - name: create ACE_TAO tar.xz artifact
       if: steps.cache-artifact.outputs.cache-hit != 'true'
