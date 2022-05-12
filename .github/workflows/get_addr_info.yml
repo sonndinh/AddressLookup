@@ -16,6 +16,7 @@ jobs:
     - name: checkout OpenDDS
       uses: actions/checkout@v3
       with:
+        repository: objectcomputing/OpenDDS
         path: OpenDDS
         submodules: true
     - name: checkout ACE_TAO
@@ -50,9 +51,7 @@ jobs:
     - name: configure OpenDDS
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       run: |
-        ls
         cd OpenDDS
-        ls
         ./configure --ace=$GITHUB_WORKSPACE/ACE_TAO/ACE --mpc=$GITHUB_WORKSPACE/MPC
     - name: build ACE
       if: steps.cache-artifact.outputs.cache-hit != 'true'
