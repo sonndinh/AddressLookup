@@ -50,7 +50,9 @@ jobs:
     - name: configure OpenDDS
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       run: |
+        ls
         cd OpenDDS
+        ls
         ./configure --ace=$GITHUB_WORKSPACE/ACE_TAO/ACE --mpc=$GITHUB_WORKSPACE/MPC
     - name: build ACE
       if: steps.cache-artifact.outputs.cache-hit != 'true'
@@ -76,6 +78,7 @@ jobs:
 
   test_u18:
     runs-on: ubuntu-18.04
+    needs: ACE_TAO_u18
     steps:
     - name: checkout AddressLookup
       uses: actions/checkout@v3
