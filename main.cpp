@@ -102,25 +102,33 @@ void hostname_to_ip(std::string address) {
       continue;
     }
 
+    ACE_DEBUG((LM_DEBUG, "hostname_to_ip: setting ip46...\n"));
     ip46 addr;
     std::memset(&addr, 0, sizeof addr);
+    ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished memset ip46...\n"));
     std::memcpy(&addr, curr->ai_addr, curr->ai_addrlen);
+    ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished memcpy ip46...\n"));
 #ifdef ACE_HAS_IPV6
     if (curr->ai_family == AF_INET6) {
       addr.in6_.sin6_port = ACE_NTOHS(port_number);
+      ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished setting IPv6 port number to ip46...\n"));
     } else {
 #endif /* ACE_HAS_IPV6 */
-      addr.in4_.sin_port = ACE_NTOHS(port_number);;
+      addr.in4_.sin_port = ACE_NTOHS(port_number);
+      ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished setting IPv4 port number to ip46...\n"));
 #ifdef ACE_HAS_IPV6
     }
 #endif /* ACE_HAS_IPV6 */
 
     ACE_INET_Addr temp;
     temp.set_addr(&addr, sizeof addr);
+    ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished setting ACE_INET_Addr addr...\n"));
     temp.set_port_number(port_number, 1 /*encode*/);
+    ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished setting ACE_INET_Addr port number...\n"));
 
     print_addr(temp, "==== IP address:");
   }
+  ACE_DEBUG((LM_DEBUG, "hostname_to_ip: going to free res\n"));
   ACE_OS::freeaddrinfo(res);
 }
 
