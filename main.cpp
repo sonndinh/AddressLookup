@@ -157,7 +157,7 @@ void address_info() {
     }
 
     // Find the hostname of the interface
-    char hostname[MAXHOSTNAMELEN+1] = "";
+    char hostname[MAXHOSTNAMELEN+1] = {'\0'};
     if (ACE::get_fqdn(addr_array[i], hostname, MAXHOSTNAMELEN+1) == 0) {
       ACE_DEBUG((LM_DEBUG, "DEBUG: address_info: IP address %C maps to hostname %C\n", buffer, hostname));
     } else {
