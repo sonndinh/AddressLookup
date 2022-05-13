@@ -121,6 +121,7 @@ jobs:
     - name: run program
       shell: cmd
       run: |
+        set PATH=%GITHUB_WORKSPACE%/ACE_TAO/ACE/lib;%PATH%
         cd AddressLookup
         ls
         echo Running program...
