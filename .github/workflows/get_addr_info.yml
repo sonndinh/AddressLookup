@@ -116,7 +116,7 @@ jobs:
       shell: cmd
       run: |
         cd AddressLookup
-        cl /EHsc main.cpp /I ../ACE_TAO/ACE /LINK /LIBPATH:../ACE_TAO/ACE/lib ACE.lib
+        cl /DWIN32 /EHsc main.cpp /I ../ACE_TAO/ACE /link /LIBPATH:../ACE_TAO/ACE/lib ACE.lib
     - name: run program
       shell: cmd
       run: |
