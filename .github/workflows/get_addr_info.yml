@@ -134,6 +134,130 @@ jobs:
         echo Running program...
         perl run_test.pl
 
+  ACE_TAO_w19_x86:
+    runs-on: windows-2019
+    steps:
+    - name: checkout OpenDDS
+      uses: actions/checkout@v3
+      with:
+        repository: objectcomputing/OpenDDS
+        path: OpenDDS
+        submodules: true
+    - name: checkout ACE_TAO
+      uses: actions/checkout@v3
+      with:
+        repository: DOCGroup/ACE_TAO
+        ref: ace6tao2
+        path: OpenDDS/ACE_TAO
+    - name: get ACE_TAO commit
+      shell: bash
+      run: |
+        cd OpenDDS/ACE_TAO
+        export ACE_COMMIT=$(git rev-parse HEAD)
+        echo "ACE_COMMIT=$ACE_COMMIT" >> $GITHUB_ENV
+    - name: get compiler version
+      shell: bash
+      run: |
+        export COMPILER_VERSION=$("C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -property catalog_productDisplayVersion)
+        echo "COMPILER_VERSION=$COMPILER_VERSION" >> $GITHUB_ENV
+    - name: Cache Artifact
+      id: cache-artifact
+      uses: actions/cache@v3
+      with:
+        path: ${{ github.job }}.tar.xz
+        key: c01_${{ github.job }}_ace6tao2_${{ env.ACE_COMMIT }}_${{ env.COMPILER_VERSION }}
+    - name: checkout MPC
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      uses: actions/checkout@v3
+      with:
+        repository: DOCGroup/MPC
+        path: MPC
+    - name: set up msvc env
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x86
+    - name: configure OpenDDS
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+        cd OpenDDS
+        call configure -v --ace=%GITHUB_WORKSPACE%/OpenDDS/ACE_TAO/ACE --tao=%GITHUB_WORKSPACE%/OpenDDS/ACE_TAO/TAO --mpc=%GITHUB_WORKSPACE%/MPC --mpcopts=-hierarchy
+        perl tools\scripts\show_build_config.pl
+    - name: build ACE
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+        cd OpenDDS
+        call setenv.cmd
+        cd ACE_TAO\ACE
+        msbuild -p:Configuration=Debug,Platform=Win32 -m ace.sln
+    - name: create ACE_TAO tar.xz artifact
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        cd OpenDDS/ACE_TAO
+        find . -iname "*\.obj" | xargs rm
+        tar cvf ../../${{ github.job }}.tar ACE/ace/config.h
+        git clean -xdfn | cut -d ' ' -f 3- | xargs tar uvf ../../${{ github.job }}.tar
+        xz -3 ../../${{ github.job }}.tar
+    - name: upload ACE_TAO artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ github.job }}_artifact
+        path: ${{ github.job }}.tar.xz
+
+  test_w19_x86:
+    runs-on: windows-2019
+    needs: ACE_TAO_w19_x86
+    steps:
+    - name: checkout AddressLookup
+      uses: actions/checkout@v3
+      with:
+        path: AddressLookup
+    - name: checkout OpenDDS
+      uses: actions/checkout@v3
+      with:
+        repository: objectcomputing/OpenDDS
+        path: OpenDDS
+    - name: checkout ACE_TAO
+      uses: actions/checkout@v3
+      with:
+        repository: DOCGroup/ACE_TAO
+        ref: ace6tao2
+        path: ACE_TAO
+    - name: download ACE_TAO artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: ACE_TAO_w19_x86_artifact
+        path: ACE_TAO
+    - name: extract ACE_TAO artifact
+      shell: bash
+      run: |
+        cd ACE_TAO
+        tar xvfJ ACE_TAO_w19_x86.tar.xz
+        rm -f ACE_TAO_w19_x86.tar.xz
+    - name: set up msvc env
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x86
+    - name: build program
+      shell: cmd
+      run: |
+        ls ACE_TAO/ACE/lib
+        cd AddressLookup
+        cl /DWIN32 /EHsc main.cpp /I ../ACE_TAO/ACE /link /LIBPATH:../ACE_TAO/ACE/lib ACEd.lib
+    - name: run program
+      shell: cmd
+      run: |
+        set DDS_ROOT=%GITHUB_WORKSPACE%/OpenDDS
+        set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
+        set PATH=%GITHUB_WORKSPACE%/ACE_TAO/ACE/lib;%PATH%
+        cd AddressLookup
+        ls
+        echo Running program...
+        perl run_test.pl
+
   ACE_TAO_u18:
     runs-on: ubuntu-18.04
     steps:
