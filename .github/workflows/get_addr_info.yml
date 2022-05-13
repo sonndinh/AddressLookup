@@ -85,7 +85,7 @@ jobs:
 
   test_w22_x86:
     runs-on: windows-2022
-    needs: ACE_TAO_w22_x86_i0
+    needs: ACE_TAO_w22_x86
     steps:
     - name: checkout AddressLookup
       uses: actions/checkout@v3
