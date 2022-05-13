@@ -128,8 +128,9 @@ void hostname_to_ip(std::string address) {
 
     print_addr(temp, "==== IP address:");
   }
-  ACE_DEBUG((LM_DEBUG, "hostname_to_ip: going to free res\n"));
+  ACE_DEBUG((LM_DEBUG, "hostname_to_ip: start freeing res\n"));
   ACE_OS::freeaddrinfo(res);
+  ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finish freeing res\n"));
 }
 
 void address_info() {
