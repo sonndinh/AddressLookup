@@ -15,7 +15,8 @@ union ip46 {
 
 void print_addr(const ACE_INET_Addr& addr, const char* str) {
   ACE_TCHAR buffer[256];
-  if (addr.addr_to_string(buffer, sizeof buffer) != 0) {
+  //if (addr.addr_to_string(buffer, sizeof buffer) != 0) {
+  if (addr.get_host_addr(buffer, sizeof buffer) != 0) {
     ACE_ERROR((LM_ERROR, "ERROR: print_addr: Failed to convert address to string\n"));
   } else {
     ACE_DEBUG((LM_DEBUG, "DEBUG: print_addr: %C %C\n", str, buffer));
@@ -146,7 +147,8 @@ void address_info() {
   for (size_t i = 0; i < addr_count; ++i) {
     ACE_DEBUG((LM_DEBUG, "address_info: Considering interface %d\n", i));
     ACE_TCHAR buffer[256];
-    if (addr_array[i].addr_to_string(buffer, sizeof buffer) != 0) {
+    //if (addr_array[i].addr_to_string(buffer, sizeof buffer) != 0) {
+    if (addr_array[i].get_host_addr(buffer, sizeof buffer) != 0) {
       ACE_ERROR((LM_ERROR, "ERROR: address_info: Failed to convert address to string\n"));
     } else {
       ACE_DEBUG((LM_DEBUG, "DEBUG: address_info: Found IP interface %C\n", buffer));
