@@ -122,7 +122,7 @@ jobs:
       run: |
         ls ACE_TAO/ACE/lib
         cd AddressLookup
-        cl /DWIN32 /EHsc main.cpp /I ../ACE_TAO/ACE /link /LIBPATH:../ACE_TAO/ACE/lib ACEd.lib
+        cl /DWIN32 /EHsc main.cpp /I %GITHUB_WORKSPACE%/ACE_TAO/ACE /link /LIBPATH:%GITHUB_WORKSPACE%/ACE_TAO/ACE/lib ACEd.lib
     - name: run program
       shell: cmd
       run: |
@@ -246,7 +246,7 @@ jobs:
       run: |
         ls ACE_TAO/ACE/lib
         cd AddressLookup
-        cl /DWIN32 /EHsc main.cpp /I ../ACE_TAO/ACE /link /LIBPATH:../ACE_TAO/ACE/lib ACEd.lib
+        cl /DWIN32 /EHsc main.cpp /I %GITHUB_WORKSPACE%/ACE_TAO/ACE /link /LIBPATH:%GITHUB_WORKSPACE%/ACE_TAO/ACE/lib ACEd.lib
     - name: run program
       shell: cmd
       run: |
