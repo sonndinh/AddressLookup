@@ -64,7 +64,7 @@ void hostname_to_ip(std::string address) {
   
   addrinfo hints;
   std::memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_UNSPEC;
+  hints.ai_family = AF_INET;
 
   // The ai_flags used to contain AI_ADDRCONFIG as well but that prevented
   // lookups from completing if there is no, or only a loopback, IPv6
