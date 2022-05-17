@@ -113,7 +113,8 @@ void hostname_to_ip(std::string address) {
 #ifdef ACE_HAS_IPV6
     ACE_DEBUG((LM_DEBUG, "ip46.in6_ size is %d\n", sizeof ip46.in6_));
 #endif
-    ACE_DEBUG((LM_DEBUG, "ip46.in4_ size is %d, curr->ai_addrlen is %d\n", sizeof addr.in4_, curr->ai_addrlen));
+    ACE_DEBUG((LM_DEBUG, "ip46.in4_ size is %d, curr addrinfo size is %d, curr->ai_addrlen is %d, curr->ai_addr size is %d\n",
+        sizeof addr.in4_, sizeof *curr, curr->ai_addrlen, sizeof *(curr->ai_addr)));
     //std::memcpy(&addr, curr->ai_addr, curr->ai_addrlen);
     std::memcpy(&addr, curr->ai_addr, sizeof addr);
     //ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished memcpy ip46...\n"));
