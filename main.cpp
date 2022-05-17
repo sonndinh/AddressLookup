@@ -21,50 +21,11 @@ void print_addr(const ACE_INET_Addr& addr, const char* str) {
 
 void hostname_to_ip(std::string address) {
   ACE_DEBUG((LM_DEBUG, "DEBUG: hostname_to_ip: Resolving IP addresses from hostname %C\n", address.c_str()));
-  //std::string host_name_str;
   unsigned short port_number = 0;
-
-  /*
-#ifdef ACE_HAS_IPV6
-  const std::string::size_type openb = address.find_first_of('[');
-  const std::string::size_type closeb = address.find_first_of(']', openb);
-  const std::string::size_type last_double = address.rfind("::", closeb);
-  const std::string::size_type port_div = closeb != std::string::npos ?
-    address.find_first_of(':', closeb + 1u) :
-    (last_double != std::string::npos ?
-     address.find_first_of(':', last_double + 2u) :
-     address.find_last_of(':'));
-#else
-  const std::string::size_type port_div = address.find_last_of(':');
-#endif
-
-  if (port_div != std::string::npos) {
-#ifdef ACE_HAS_IPV6
-    if (openb != std::string::npos && closeb != std::string::npos) {
-      host_name_str = address.substr(openb + 1u, closeb - 1u - openb);
-    } else
-#endif // ACE_HAS_IPV6
-    {
-      host_name_str = address.substr(0, port_div);
-    }
-    port_number = static_cast<unsigned short>(std::strtoul(address.substr(port_div + 1u).c_str(), 0, 10));
-  } else {
-#ifdef ACE_HAS_IPV6
-    if (openb != std::string::npos && closeb != std::string::npos) {
-      host_name_str = address.substr(openb + 1u, closeb - 1u - openb);
-    } else
-#endif // ACE_HAS_IPV6
-    {
-      host_name_str = address;
-    }
-  }
-
-  const char* host_name = host_name_str.c_str();
-*/
   
   addrinfo hints;
   std::memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_INET;
+  hints.ai_family = AF_UNSPEC;//AF_INET;
 
   // The ai_flags used to contain AI_ADDRCONFIG as well but that prevented
   // lookups from completing if there is no, or only a loopback, IPv6
@@ -101,7 +62,6 @@ void hostname_to_ip(std::string address) {
       continue;
     }
 
-    //ACE_DEBUG((LM_DEBUG, "hostname_to_ip: setting ip46...\n"));
     union ip46 {
         sockaddr_in  in4_;
 #ifdef ACE_HAS_IPV6
@@ -109,39 +69,32 @@ void hostname_to_ip(std::string address) {
 #endif /* ACE_HAS_IPV6 */
     } addr;
     std::memset(&addr, 0, sizeof addr);
-    //ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished memset ip46...\n"));
+
 #ifdef ACE_HAS_IPV6
     ACE_DEBUG((LM_DEBUG, "ip46.in6_ size is %d\n", sizeof ip46.in6_));
 #endif
     ACE_DEBUG((LM_DEBUG, "ip46.in4_ size is %d, curr addrinfo size is %d, curr->ai_addrlen is %d, curr->ai_addr size is %d\n",
         sizeof addr.in4_, sizeof *curr, curr->ai_addrlen, sizeof *(curr->ai_addr)));
-    //std::memcpy(&addr, curr->ai_addr, curr->ai_addrlen);
-    std::memcpy(&addr, curr->ai_addr, sizeof addr);
-    //ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished memcpy ip46...\n"));
+    std::memcpy(&addr, curr->ai_addr, curr->ai_addrlen);
+    //std::memcpy(&addr, curr->ai_addr, sizeof addr);
 
 #ifdef ACE_HAS_IPV6
     if (curr->ai_family == AF_INET6) {
-      //addr.in6_.sin6_port = ACE_NTOHS(port_number);
-      //ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished setting IPv6 port number to ip46...\n"));
+      addr.in6_.sin6_port = ACE_NTOHS(port_number);
     } else {
 #endif /* ACE_HAS_IPV6 */
-      //addr.in4_.sin_port = ACE_NTOHS(port_number);
-      //ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished setting IPv4 port number to ip46...\n"));
+      addr.in4_.sin_port = ACE_NTOHS(port_number);
 #ifdef ACE_HAS_IPV6
     }
 #endif /* ACE_HAS_IPV6 */
 
     ACE_INET_Addr temp;
     temp.set_addr(&addr, sizeof addr);
-    //ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished setting ACE_INET_Addr addr...\n"));
     temp.set_port_number(port_number, 1 /*encode*/);
-    //ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finished setting ACE_INET_Addr port number...\n"));
 
     print_addr(temp, "==== IP address:");
   }
-  //ACE_DEBUG((LM_DEBUG, "hostname_to_ip: start freeing res\n"));
   ACE_OS::freeaddrinfo(res);
-  //ACE_DEBUG((LM_DEBUG, "hostname_to_ip: finish freeing res\n"));
 }
 
 void address_info() {
@@ -172,9 +125,6 @@ void address_info() {
     if (addr_array[i].get_host_addr(buffer, sizeof buffer) == 0) {
       ACE_ERROR((LM_ERROR, "ERROR: address_info: Failed to convert address to string\n"));
     } 
-    //else {
-    //  ACE_DEBUG((LM_DEBUG, "DEBUG: address_info: Found IP interface %C\n", buffer));
-    //}
 
     // Find the hostname of the interface
     char hostname[MAXHOSTNAMELEN+1] = {'\0'};
