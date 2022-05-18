@@ -41,7 +41,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ github.job }}.tar.xz
-        key: c01_${{ github.job }}_ace6tao2_${{ env.ACE_COMMIT }}_${{ env.COMPILER_VERSION }}
+        key: c02_${{ github.job }}_ace6tao2_${{ env.ACE_COMMIT }}_${{ env.COMPILER_VERSION }}
     - name: checkout MPC
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       uses: actions/checkout@v3
@@ -60,7 +60,7 @@ jobs:
         cd OpenDDS
         call configure -v --ace=%GITHUB_WORKSPACE%/OpenDDS/ACE_TAO/ACE --tao=%GITHUB_WORKSPACE%/OpenDDS/ACE_TAO/TAO --mpc=%GITHUB_WORKSPACE%/MPC --mpcopts=-hierarchy
         perl tools\scripts\show_build_config.pl
-    - name: build ACE
+    - name: build ACE and TAO
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       shell: cmd
       run: |
@@ -68,6 +68,8 @@ jobs:
         call setenv.cmd
         cd ACE_TAO\ACE
         msbuild -p:Configuration=Debug,Platform=Win32 -m ace.sln
+        cd ..\TAO
+        msbuild -p:Configuration=Debug,Platform=Win32 -m tao.sln
     - name: create ACE_TAO tar.xz artifact
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       shell: bash
@@ -175,7 +177,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ github.job }}.tar.xz
-        key: c01_${{ github.job }}_ace6tao2_${{ env.ACE_COMMIT }}_${{ env.COMPILER_VERSION }}
+        key: c02_${{ github.job }}_ace6tao2_${{ env.ACE_COMMIT }}_${{ env.COMPILER_VERSION }}
     - name: checkout MPC
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       uses: actions/checkout@v3
@@ -194,7 +196,7 @@ jobs:
         cd OpenDDS
         call configure -v --ace=%GITHUB_WORKSPACE%/OpenDDS/ACE_TAO/ACE --tao=%GITHUB_WORKSPACE%/OpenDDS/ACE_TAO/TAO --mpc=%GITHUB_WORKSPACE%/MPC --mpcopts=-hierarchy
         perl tools\scripts\show_build_config.pl
-    - name: build ACE
+    - name: build ACE and TAO
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       shell: cmd
       run: |
@@ -202,6 +204,8 @@ jobs:
         call setenv.cmd
         cd ACE_TAO\ACE
         msbuild -p:Configuration=Debug,Platform=Win32 -m ace.sln
+        cd ..\TAO
+        msbuild -p:Configuration=Debug,Platform=Win32 -m tao.sln
     - name: create ACE_TAO tar.xz artifact
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       shell: bash
