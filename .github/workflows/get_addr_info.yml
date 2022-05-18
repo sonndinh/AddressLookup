@@ -91,6 +91,11 @@ jobs:
       uses: actions/checkout@v3
       with:
         path: AddressLookup
+    - name: checkout MPC
+      uses: actions/checkout@v3
+      with:
+        repository: DOCGroup/MPC
+        path: MPC
     - name: checkout OpenDDS
       uses: actions/checkout@v3
       with:
@@ -120,9 +125,12 @@ jobs:
     - name: build program
       shell: cmd
       run: |
-        ls ACE_TAO/ACE/lib
+        set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
+        set MPC_ROOT=%GITHUB_WORKSPACE%/MPC
         cd AddressLookup
-        cl /DWIN32 /EHsc main.cpp /I %GITHUB_WORKSPACE%/ACE_TAO/ACE /link /LIBPATH:%GITHUB_WORKSPACE%/ACE_TAO/ACE/lib ACEd.lib
+        perl %ACE_ROOT%\bin\mwc.pl -type vs2022
+        ls
+        msbuild -p:Configuration=Debug,Platform=Win32 -m AddressLookup.sln
     - name: run program
       shell: cmd
       run: |
@@ -131,7 +139,6 @@ jobs:
         set PATH=%GITHUB_WORKSPACE%/ACE_TAO/ACE/lib;%PATH%
         cd AddressLookup
         ls
-        echo Running program...
         perl run_test.pl
 
   ACE_TAO_w19_x86:
@@ -215,6 +222,11 @@ jobs:
       uses: actions/checkout@v3
       with:
         path: AddressLookup
+    - name: checkout MPC
+      uses: actions/checkout@v3
+      with:
+        repository: DOCGroup/MPC
+        path: MPC
     - name: checkout OpenDDS
       uses: actions/checkout@v3
       with:
@@ -244,9 +256,12 @@ jobs:
     - name: build program
       shell: cmd
       run: |
-        ls ACE_TAO/ACE/lib
+        set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
+        set MPC_ROOT=%GITHUB_WORKSPACE%/MPC
         cd AddressLookup
-        cl /DWIN32 /EHsc main.cpp /I %GITHUB_WORKSPACE%/ACE_TAO/ACE /link /LIBPATH:%GITHUB_WORKSPACE%/ACE_TAO/ACE/lib ACEd.lib
+        perl %ACE_ROOT%\bin\mwc.pl -type vs2019
+        ls
+        msbuild -p:Configuration=Debug,Platform=Win32 -m AddressLookup.sln
     - name: run program
       shell: cmd
       run: |
@@ -254,8 +269,6 @@ jobs:
         set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
         set PATH=%GITHUB_WORKSPACE%/ACE_TAO/ACE/lib;%PATH%
         cd AddressLookup
-        ls
-        echo Running program...
         perl run_test.pl
 
   ACE_TAO_u18:
