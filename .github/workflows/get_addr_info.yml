@@ -125,6 +125,7 @@ jobs:
     - name: build program
       shell: cmd
       run: |
+        set DDS_ROOT=%GITHUB_WORKSPACE%/OpenDDS
         set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
         set MPC_ROOT=%GITHUB_WORKSPACE%/MPC
         cd AddressLookup
@@ -256,6 +257,7 @@ jobs:
     - name: build program
       shell: cmd
       run: |
+        set DDS_ROOT=%GITHUB_WORKSPACE%/OpenDDS
         set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
         set MPC_ROOT=%GITHUB_WORKSPACE%/MPC
         cd AddressLookup
