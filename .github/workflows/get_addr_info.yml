@@ -41,7 +41,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ github.job }}.tar.xz
-        key: c02_${{ github.job }}_ace6tao2_${{ env.ACE_COMMIT }}_${{ env.COMPILER_VERSION }}
+        key: c03_${{ github.job }}_ace6tao2_${{ env.ACE_COMMIT }}_${{ env.COMPILER_VERSION }}
     - name: checkout MPC
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       uses: actions/checkout@v3
@@ -60,7 +60,7 @@ jobs:
         cd OpenDDS
         call configure -v --ace=%GITHUB_WORKSPACE%/OpenDDS/ACE_TAO/ACE --tao=%GITHUB_WORKSPACE%/OpenDDS/ACE_TAO/TAO --mpc=%GITHUB_WORKSPACE%/MPC --mpcopts=-hierarchy
         perl tools\scripts\show_build_config.pl
-    - name: build ACE and TAO
+    - name: build everything
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       shell: cmd
       run: |
@@ -70,20 +70,35 @@ jobs:
         msbuild -p:Configuration=Debug,Platform=Win32 -m ace.sln
         cd ..\TAO
         msbuild -p:Configuration=Debug,Platform=Win32 -m tao.sln
+        cd ..\..
+        msbuild -p:Configuration=Debug,Platform=Win32 -m DDS.sln
     - name: create ACE_TAO tar.xz artifact
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       shell: bash
       run: |
         cd OpenDDS/ACE_TAO
         find . -iname "*\.obj" | xargs rm
-        tar cvf ../../${{ github.job }}.tar ACE/ace/config.h
-        git clean -xdfn | cut -d ' ' -f 3- | xargs tar uvf ../../${{ github.job }}.tar
-        xz -3 ../../${{ github.job }}.tar
+        tar cvf ../../${{ github.job }}_ACE_TAO.tar ACE/ace/config.h
+        git clean -xdfn | cut -d ' ' -f 3- | xargs tar uvf ../../${{ github.job }}_ACE_TAO.tar
+        xz -3 ../../${{ github.job }}_ACE_TAO.tar
     - name: upload ACE_TAO artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ github.job }}_artifact
-        path: ${{ github.job }}.tar.xz
+        name: ${{ github.job }}_ACE_TAO_artifact
+        path: ${{ github.job }}_ACE_TAO.tar.xz
+    - name: create OpenDDS tar.xz artifact
+      shell: bash
+      run: |
+        cd OpenDDS
+        find . -iname "*\.obj" -o -iname "*\.pdb" -o -iname "*\.idb" -o -type f -iname "*\.tlog" | xargs rm
+        tar cvf ../${{ github.job }}_OpenDDS.tar setenv.cmd
+        git clean -xdfn | cut -d ' ' -f 3- | xargs tar uvf ../${{ github.job }}_OpenDDS.tar
+        xz -3 ../${{ github.job }}_OpenDDS.tar
+    - name: upload OpenDDS artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ github.job }}_OpenDDS_artifact
+        path: ${{ github.job }}_OpenDDS.tar.xz
 
   test_w22_x86:
     runs-on: windows-2022
@@ -103,23 +118,34 @@ jobs:
       with:
         repository: objectcomputing/OpenDDS
         path: OpenDDS
+    - name: download OpenDDS artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: ACE_TAO_w22_x86_OpenDDS_artifact
+        path: OpenDDS
+    - name: extract OpenDDS artifact
+      shell: bash
+      run: |
+        cd OpenDDS
+        tar xvfJ ACE_TAO_w22_x86_OpenDDS.tar.xz
+        rm -f ACE_TAO_w22_x86_OpenDDS.tar.xz
     - name: checkout ACE_TAO
       uses: actions/checkout@v3
       with:
         repository: DOCGroup/ACE_TAO
         ref: ace6tao2
-        path: ACE_TAO
+        path: OpenDDS/ACE_TAO
     - name: download ACE_TAO artifact
       uses: actions/download-artifact@v3
       with:
-        name: ACE_TAO_w22_x86_artifact
-        path: ACE_TAO
+        name: ACE_TAO_w22_x86_ACE_TAO_artifact
+        path: OpenDDS/ACE_TAO
     - name: extract ACE_TAO artifact
       shell: bash
       run: |
-        cd ACE_TAO
-        tar xvfJ ACE_TAO_w22_x86.tar.xz
-        rm -f ACE_TAO_w22_x86.tar.xz
+        cd OpenDDS/ACE_TAO
+        tar xvfJ ACE_TAO_w22_x86_ACE_TAO.tar.xz
+        rm -f ACE_TAO_w22_x86_ACE_TAO.tar.xz
     - name: set up msvc env
       uses: ilammy/msvc-dev-cmd@v1
       with:
@@ -127,22 +153,18 @@ jobs:
     - name: build program
       shell: cmd
       run: |
-        set DDS_ROOT=%GITHUB_WORKSPACE%/OpenDDS
-        set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
-        set TAO_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/TAO
-        set MPC_ROOT=%GITHUB_WORKSPACE%/MPC
-        cd AddressLookup
+        cd OpenDDS
+        call setenv.cmd
+        cd ..\AddressLookup
         perl %ACE_ROOT%\bin\mwc.pl -type vs2022
         ls
         msbuild -p:Configuration=Debug,Platform=Win32 -m AddressLookup.sln
     - name: run program
       shell: cmd
       run: |
-        set DDS_ROOT=%GITHUB_WORKSPACE%/OpenDDS
-        set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
-        set TAO_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/TAO
-        set PATH=%GITHUB_WORKSPACE%/ACE_TAO/ACE/lib;%PATH%
-        cd AddressLookup
+        cd OpenDDS
+        call setenv.cmd
+        cd ../AddressLookup
         ls
         perl run_test.pl
 
