@@ -127,6 +127,7 @@ jobs:
       run: |
         set DDS_ROOT=%GITHUB_WORKSPACE%/OpenDDS
         set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
+        set TAO_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/TAO
         set MPC_ROOT=%GITHUB_WORKSPACE%/MPC
         cd AddressLookup
         perl %ACE_ROOT%\bin\mwc.pl -type vs2022
@@ -137,6 +138,7 @@ jobs:
       run: |
         set DDS_ROOT=%GITHUB_WORKSPACE%/OpenDDS
         set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
+        set TAO_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/TAO
         set PATH=%GITHUB_WORKSPACE%/ACE_TAO/ACE/lib;%PATH%
         cd AddressLookup
         ls
@@ -259,6 +261,7 @@ jobs:
       run: |
         set DDS_ROOT=%GITHUB_WORKSPACE%/OpenDDS
         set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
+        set TAO_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/TAO
         set MPC_ROOT=%GITHUB_WORKSPACE%/MPC
         cd AddressLookup
         perl %ACE_ROOT%\bin\mwc.pl -type vs2019
@@ -269,6 +272,7 @@ jobs:
       run: |
         set DDS_ROOT=%GITHUB_WORKSPACE%/OpenDDS
         set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
+        set TAO_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/TAO
         set PATH=%GITHUB_WORKSPACE%/ACE_TAO/ACE/lib;%PATH%
         cd AddressLookup
         perl run_test.pl
