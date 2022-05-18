@@ -52,7 +52,7 @@ void hostname_to_ip(std::string address) {
   addrinfo *res = 0;
   const int error = ACE_OS::getaddrinfo(address.c_str(), 0, &hints, &res);
   if (error) {
-    ACE_ERROR((LM_ERROR, "hostname_to_ip: Call to getaddrinfo() for hostname %C returned error: %d\n", address.c_str(), error));
+    ACE_ERROR((LM_ERROR, "hostname_to_ip: Call to getaddrinfo() for hostname %C returned error: %d\n", address.c_str(), gai_strerror(error)));
     return;
   }
 
