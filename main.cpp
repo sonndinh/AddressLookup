@@ -25,8 +25,12 @@ void hostname_to_ip(std::string address) {
   
   addrinfo hints;
   std::memset(&hints, 0, sizeof hints);
+#ifdef ACE_HAS_IPV6
+  hints.ai_family = AF_UNSPEC;
+#else
   hints.ai_family = AF_INET;
-
+#endif
+  
   // The ai_flags used to contain AI_ADDRCONFIG as well but that prevented
   // lookups from completing if there is no, or only a loopback, IPv6
   // interface configured. See Bugzilla 4211 for more info.
@@ -73,8 +77,8 @@ void hostname_to_ip(std::string address) {
 #ifdef ACE_HAS_IPV6
     ACE_DEBUG((LM_DEBUG, "ip46.in6_ size is %d\n", sizeof ip46.in6_));
 #endif
-    ACE_DEBUG((LM_DEBUG, "ip46.in4_ size is %d, curr addrinfo size is %d, curr->ai_addrlen is %d, curr->ai_addr size is %d, curr family is %d\n",
-        sizeof addr.in4_, sizeof *curr, curr->ai_addrlen, sizeof *(curr->ai_addr), curr->ai_family));
+    ACE_DEBUG((LM_DEBUG, "addr size is %d, curr addrinfo size is %d, curr->ai_addrlen is %d, curr->ai_addr size is %d, curr family is %d\n",
+        sizeof addr, sizeof *curr, curr->ai_addrlen, sizeof *(curr->ai_addr), curr->ai_family));
     std::memcpy(&addr, curr->ai_addr, curr->ai_addrlen);
     //std::memcpy(&addr, curr->ai_addr, sizeof addr);
 
