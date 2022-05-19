@@ -18,7 +18,6 @@ jobs:
       with:
         repository: objectcomputing/OpenDDS
         path: OpenDDS
-        submodules: true
     - name: checkout ACE_TAO
       uses: actions/checkout@v3
       with:
@@ -41,7 +40,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ${{ github.job }}.tar.xz
-        key: c03_${{ github.job }}_ace6tao2_${{ env.ACE_COMMIT }}_${{ env.COMPILER_VERSION }}
+        key: c04_${{ github.job }}_ace6tao2_${{ env.ACE_COMMIT }}_${{ env.COMPILER_VERSION }}
     - name: checkout MPC
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       uses: actions/checkout@v3
@@ -238,7 +237,7 @@ jobs:
       run: |
         cd OpenDDS
         call setenv.cmd
-        cd ../AddressLookup
+        cd ..\AddressLookup
         ls
         perl run_test.pl
 
@@ -250,7 +249,6 @@ jobs:
       with:
         repository: objectcomputing/OpenDDS
         path: OpenDDS
-        submodules: true
     - name: checkout ACE_TAO
       uses: actions/checkout@v3
       with:
@@ -317,9 +315,98 @@ jobs:
         name: ${{ github.job }}_artifact
         path: ${{ github.job }}.tar.xz
 
-  test_w19_x86:
+  OpenDDS_w19_x86:
     runs-on: windows-2019
     needs: ACE_TAO_w19_x86
+    steps:
+    - name: checkout OpenDDS
+      uses: actions/checkout@v3
+      with:
+        repository: objectcomputing/OpenDDS
+        path: OpenDDS
+    - name: get OpenDDS commit
+      shell: bash
+      run: |
+        cd OpenDDS
+        export OPENDDS_COMMIT=$(git rev-parse HEAD)
+        echo "OPENDDS_COMMIT=$OPENDDS_COMMIT" >> $GITHUB_ENV
+    - name: get compiler version
+      shell: bash
+      run: |
+        export COMPILER_VERSION=$("C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -property catalog_productDisplayVersion)
+        echo "COMPILER_VERSION=$COMPILER_VERSION" >> $GITHUB_ENV
+    - name: Cache Artifact
+      id: cache-artifact
+      uses: actions/cache@v3
+      with:
+        path: ${{ github.job }}.tar.xz
+        key: c01_${{ github.job }}_master_${{ env.OPENDDS_COMMIT }}_${{ env.COMPILER_VERSION }}
+    - name: checkout MPC
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      uses: actions/checkout@v3
+      with:
+        repository: DOCGroup/MPC
+        path: MPC
+    - name: checkout ACE_TAO
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      uses: actions/checkout@v3
+      with:
+        repository: DOCGroup/ACE_TAO
+        ref: ace6tao2
+        path: OpenDDS/ACE_TAO
+    - name: download ACE_TAO artifact
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      uses: actions/download-artifact@v3
+      with:
+        name: ACE_TAO_w19_x86_artifact
+        path: OpenDDS/ACE_TAO
+    - name: extract ACE_TAO artifact
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        cd OpenDDS/ACE_TAO
+        tar xvfJ ACE_TAO_w19_x86.tar.xz
+        rm -f ACE_TAO_w19_x86.tar.xz
+    - name: set up msvc env
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x86
+    - name: configure OpenDDS
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+        cd OpenDDS
+        call configure -v --ace=%GITHUB_WORKSPACE%/OpenDDS/ACE_TAO/ACE --tao=%GITHUB_WORKSPACE%/OpenDDS/ACE_TAO/TAO --mpc=%GITHUB_WORKSPACE%/MPC --mpcopts=-hierarchy
+        echo "After running configure"
+        dir
+        perl tools\scripts\show_build_config.pl
+    - name: build OpenDDS
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+        cd OpenDDS
+        call setenv.cmd
+        msbuild -p:Configuration=Debug,Platform=Win32 -m DDS_no_tests.sln
+    - name: create OpenDDS tar.xz artifact
+      if: steps.cache-artifact.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        cd OpenDDS
+        rm -rf ACE_TAO
+        find . -iname "*\.obj" -o -iname "*\.pdb" -o -iname "*\.idb" -o -type f -iname "*\.tlog" | xargs rm
+        tar cvf ../${{ github.job }}.tar setenv.cmd
+        git clean -xdfn | cut -d ' ' -f 3- | xargs tar uvf ../${{ github.job }}.tar
+        xz -3 ../${{ github.job }}.tar
+    - name: upload OpenDDS artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ github.job }}_artifact
+        path: ${{ github.job }}.tar.xz
+
+  test_w19_x86:
+    runs-on: windows-2019
+    needs: OpenDDS_w19_x86
     steps:
     - name: checkout AddressLookup
       uses: actions/checkout@v3
@@ -335,21 +422,32 @@ jobs:
       with:
         repository: objectcomputing/OpenDDS
         path: OpenDDS
+    - name: download OpenDDS artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: OpenDDS_w19_x86_artifact
+        path: OpenDDS
+    - name: extract OpenDDS artifact
+      shell: bash
+      run: |
+        cd OpenDDS
+        tar xvfJ OpenDDS_w19_x86.tar.xz
+        rm -f OpenDDS_w19_x86.tar.xz
     - name: checkout ACE_TAO
       uses: actions/checkout@v3
       with:
         repository: DOCGroup/ACE_TAO
         ref: ace6tao2
-        path: ACE_TAO
+        path: OpenDDS/ACE_TAO
     - name: download ACE_TAO artifact
       uses: actions/download-artifact@v3
       with:
         name: ACE_TAO_w19_x86_artifact
-        path: ACE_TAO
+        path: OpenDDS/ACE_TAO
     - name: extract ACE_TAO artifact
       shell: bash
       run: |
-        cd ACE_TAO
+        cd OpenDDS/ACE_TAO
         tar xvfJ ACE_TAO_w19_x86.tar.xz
         rm -f ACE_TAO_w19_x86.tar.xz
     - name: set up msvc env
@@ -359,22 +457,18 @@ jobs:
     - name: build program
       shell: cmd
       run: |
-        set DDS_ROOT=%GITHUB_WORKSPACE%/OpenDDS
-        set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
-        set TAO_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/TAO
-        set MPC_ROOT=%GITHUB_WORKSPACE%/MPC
-        cd AddressLookup
+        cd OpenDDS
+        call setenv.cmd
+        cd ..\AddressLookup
         perl %ACE_ROOT%\bin\mwc.pl -type vs2019
         ls
         msbuild -p:Configuration=Debug,Platform=Win32 -m AddressLookup.sln
     - name: run program
       shell: cmd
       run: |
-        set DDS_ROOT=%GITHUB_WORKSPACE%/OpenDDS
-        set ACE_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/ACE
-        set TAO_ROOT=%GITHUB_WORKSPACE%/ACE_TAO/TAO
-        set PATH=%GITHUB_WORKSPACE%/ACE_TAO/ACE/lib;%PATH%
-        cd AddressLookup
+        cd OpenDDS
+        call setenv.cmd
+        cd ..\AddressLookup
         perl run_test.pl
 
   ACE_TAO_u18:
