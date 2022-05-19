@@ -18,6 +18,7 @@ jobs:
       with:
         repository: objectcomputing/OpenDDS
         path: OpenDDS
+        submodules: true
     - name: checkout ACE_TAO
       uses: actions/checkout@v3
       with:
@@ -93,6 +94,7 @@ jobs:
       with:
         repository: objectcomputing/OpenDDS
         path: OpenDDS
+        submodules: true
     - name: get OpenDDS commit
       shell: bash
       run: |
@@ -191,6 +193,7 @@ jobs:
       with:
         repository: objectcomputing/OpenDDS
         path: OpenDDS
+        submodules: true
     - name: download OpenDDS artifact
       uses: actions/download-artifact@v3
       with:
@@ -249,6 +252,7 @@ jobs:
       with:
         repository: objectcomputing/OpenDDS
         path: OpenDDS
+        submodules: true
     - name: checkout ACE_TAO
       uses: actions/checkout@v3
       with:
@@ -324,6 +328,7 @@ jobs:
       with:
         repository: objectcomputing/OpenDDS
         path: OpenDDS
+        submodules: true
     - name: get OpenDDS commit
       shell: bash
       run: |
@@ -422,6 +427,7 @@ jobs:
       with:
         repository: objectcomputing/OpenDDS
         path: OpenDDS
+        submodules: true
     - name: download OpenDDS artifact
       uses: actions/download-artifact@v3
       with:
