@@ -3,6 +3,7 @@
 #include <ace/Sock_Connect.h>
 #include <ace/Log_Msg.h>
 #include <ace/OS_NS_string.h>
+#include <ace/OS_NS_unistd.h>
 
 #include <string>
 #include <cstring>
@@ -146,9 +147,11 @@ void address_info() {
 }
 
 int main(int argc, char* argv[]) {
-  ACE_DEBUG((LM_DEBUG, "========= Attempt 1....\n"));
-  address_info();
-  ACE_DEBUG((LM_DEBUG, "========= Attempt 2....\n"));
-  address_info();
+  const int attempts = 3;
+  for (int i = 0; i < attempts; ++i) {
+    ACE_DEBUG((LM_DEBUG, "========= Attempt %d....\n", i));
+    address_info();
+    ACE_OS::sleep((i+1)*2);
+  }
   return 0;
 }
