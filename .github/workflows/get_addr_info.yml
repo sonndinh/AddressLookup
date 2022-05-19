@@ -59,6 +59,8 @@ jobs:
       run: |
         cd OpenDDS
         call configure -v --ace=%GITHUB_WORKSPACE%/OpenDDS/ACE_TAO/ACE --tao=%GITHUB_WORKSPACE%/OpenDDS/ACE_TAO/TAO --mpc=%GITHUB_WORKSPACE%/MPC --mpcopts=-hierarchy
+        echo "After running configure"
+        dir
         perl tools\scripts\show_build_config.pl
     - name: build everything
       if: steps.cache-artifact.outputs.cache-hit != 'true'
