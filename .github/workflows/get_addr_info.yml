@@ -68,12 +68,7 @@ jobs:
       run: |
         cd OpenDDS
         call setenv.cmd
-        cd ACE_TAO\ACE
-        msbuild -p:Configuration=Debug,Platform=Win32 -m ace.sln
-        cd ..\TAO
-        msbuild -p:Configuration=Debug,Platform=Win32 -m tao.sln
-        cd ..\..
-        msbuild -p:Configuration=Debug,Platform=Win32 -m DDS.sln
+        msbuild -p:Configuration=Debug,Platform=Win32 -m DDS_TAOv2.sln
     - name: create ACE_TAO tar.xz artifact
       if: steps.cache-artifact.outputs.cache-hit != 'true'
       shell: bash
