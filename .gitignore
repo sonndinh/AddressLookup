@@ -1,0 +1,6 @@
+.depend.*
+*~
+.obj/
+GNUmakefile*
+main
+resolv
